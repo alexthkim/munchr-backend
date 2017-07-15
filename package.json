@@ -5,6 +5,8 @@
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
-    "mongoose": "^4.10.6"
+    "jsonfile": "^3.0.1",
+    "mongoose": "^4.10.6",
+    "underscore": "^1.8.3"
   }
 }
