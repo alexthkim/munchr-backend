@@ -12,7 +12,7 @@ var User = models.User;
 var Photo = models.Photo;
 
 router.post('/login', function(req,res) {
-  User.find({fbID: req.body.fbID}, function(err, user) {
+  User.findOne({fbID: req.body.fbID}, function(err, user) {
     if (err) {
       res.send({success: false});
     } else {
