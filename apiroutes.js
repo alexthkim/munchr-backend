@@ -5,14 +5,30 @@ var models = require('./models/models');
 var User = models.User;
 var Photo = models.Photo
 
-
-
-router.post('/login') {
-  // Not sure if necessary b/c of facebook Authentication, but we should Check
-  // whether or not a user is logged in so that we can create a login wall?
-  // Maybe not necessary since this is a mobile app and its actually not possible to
-  // bypass the login screen without logging in
-}
+router.post('/login', function(req,res) {
+  User.find({fbID: req.body.fbID}, function(err, user) {
+    if (err) {
+      res.send({success: false});
+    } else {
+      if (user.length === 0) {
+        var params = req.body;
+        params.explorePref = 'comfort';
+        params.mainPref = [];
+        params.sessionPref = [];
+        var newUser = new User(params);
+        newUser.save(function(err) {
+          if (err) {
+            res.send({success: false});
+          } else {
+            res.send({success: true, user: params});
+          }
+        })
+      } else {
+        res.send({success: true, user: user})
+      }
+    }
+  })
+});
 
 // function generateInitial(userId) {
 //   User.findById(userId, function(err, user) {
@@ -34,14 +50,14 @@ router.post('/login') {
 // Set number 3 = based on 2, 4 = based on 3 [optional if our heuristic is unclear]
 // Return either an object containing two things either:
 // {finished: false, images: []} or {finished: true, keywords: []}
-router.post('/generate/:id', function(req, res) {
-  var setNum = req.body.setNumber;
-  if (setNum === 1) {
-    return generateInitial(req.query.id);
-  } else (setNum === 2) {
-    return generateAndAnalyze(req.query.id, req.body.cards)
-  }
-})
+// router.post('/generate/:id', function(req, res) {
+//   var setNum = req.body.setNumber;
+//   if (setNum === 1) {
+//     return generateInitial(req.query.id);
+//   } else (setNum === 2) {
+//     return generateAndAnalyze(req.query.id, req.body.cards)
+//   }
+// })
 
 /*
   To-Do

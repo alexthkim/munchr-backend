@@ -11,10 +11,12 @@ var foodSchema = mongoose.Schema({
 })
 
 var userSchema = mongoose.Schema({
-  fname: String,
-  lname: String,
+  fullname: String,
+  fbID: Number,
   photoUrl: String,
   email: String,
+  locale: String,
+  timezone: String,
   mainPref: Array,
   sessionPref: Array,
   explorePref: {
