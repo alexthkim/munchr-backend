@@ -21,4 +21,5 @@ app.use(bodyParser.urlencoded({ extended: true }));
 var apiroutes = require('./apiroutes');
 app.use('/api', apiroutes);
 
-app.listen(3000);
+var port = process.env.PORT || 3000
+app.listen(port);
