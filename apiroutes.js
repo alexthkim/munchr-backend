@@ -30,6 +30,7 @@ router.post('/login', function(req,res) {
           }
         })
       } else {
+        console.log(user);
         res.send({success: true, id: user._id})
       }
     }
