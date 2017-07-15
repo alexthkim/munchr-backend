@@ -11,6 +11,7 @@ var genResult = require('./algo/generateResult')
 var User = models.User;
 var Photo = models.Photo;
 
+// Route to login and returns a mongo_db ID for the user
 router.post('/login', function(req,res) {
   User.find({fbID: req.body.fbID}, function(err, user) {
     if (err) {
@@ -37,31 +38,16 @@ router.post('/login', function(req,res) {
   })
 });
 
-// Input: req.body.setNumber, req.body.cards
-// On set 2 -> read the first 4 cards, generate the next 5 images
-// On potential set 3 -> read the first 5 cards, generate the next 5 images
-// On potential set 4 -> read the first 5 cards, generate the next 5 images
-// Generate the first 5 pictures based on some heuristic (max of 15 or 20)
-// Set number 1 = random, 2 = based on 1 [mandatory],
-// Set number 3 = based on 2, 4 = based on 3 [optional if our heuristic is unclear]
-// Return either an object containing two things either:
-// {finished: false, images: []} or {finished: true, keywords: []}
-
+// Route to generate pictures for the user
+// To-do: generate pictures based on past search histories
 router.post('/generate/:id', function(req, res) {
   res.send({success: true, cards: genInit()})
-  // var setNum = req.body.setNumber;
-  // if (setNum === 1) {
-  //   return generateInitial(req.query.id);
-  // } else (setNum === 2) {
-  //   return generateAndAnalyze(req.query.id, req.body.cards)
-  // }
 })
 
+// Route to get results of swipes for the user
 router.post('/results/:id', async (function(req, res) {
   var keywords = [];
-  console.log(req.body.swipes);
   var arrKeys = genResult(req.params.id, req.body.swipes);
-  console.log(arrKeys);
 
   for (var i = 0; i < arrKeys.length; i++) {
     var temp = await (fetch('https://api.yelp.com/v3/businesses/search?latitude=' + req.body.lat + '&longitude=' + req.body.long + '&term=' + arrKeys[i], {
@@ -91,12 +77,12 @@ router.post('/results/:id', async (function(req, res) {
         res.send({success: false})
       } else {
         res.send({success: true, restaurant: keywords[rand]});
-
       }
     })
   }
 }))
 
+// Route to obtain pictures for a particular business
 router.get('/pictures/:businessid', function(req,res) {
   fetch('https://api.yelp.com/v3/businesses/' + req.params.businessid, {
       method: 'GET',
@@ -113,6 +99,7 @@ router.get('/pictures/:businessid', function(req,res) {
     })
 })
 
+// Route to obtain profile information for a user
 router.get('/profile/:id', function(req, res) {
   User.findById(req.params.id, function(err, user) {
     if (err) {
