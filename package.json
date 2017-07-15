@@ -1,7 +1,6 @@
 {
   "scripts": {
-    "start": "nodemon app.js",
-    "dev": "webpack-dev-server --content-base build/"
+    "start": "nodemon app.js"
   },
   "dependencies": {
     "asyncawait": "^1.0.6",
