@@ -1,7 +1,13 @@
-var mongoose = require('mongoose')
-;var express = require('express');
+var mongoose = require('mongoose');
+var async = require('asyncawait/async');
+var await = require('asyncawait/await');
+var fetch = require('node-fetch');
+var math = require('mathjs')
+var express = require('express');
 var router = express.Router();
 var models = require('./models/models');
+var genInit = require('./algo/generateInitial')
+var genResult = require('./algo/generateResult')
 var User = models.User;
 var Photo = models.Photo;
 
@@ -20,25 +26,15 @@ router.post('/login', function(req,res) {
           if (err) {
             res.send({success: false});
           } else {
-            res.send({success: true, user: params});
+            res.send({success: true, id: newUser._id});
           }
         })
       } else {
-        res.send({success: true, user: user})
+        res.send({success: true, id: user._id})
       }
     }
   })
 });
-
-// function generateInitial(userId) {
-//   User.findById(userId, function(err, user) {
-//     if (err) {
-//       console.log(err);
-//     } else {
-//       // Some algo here
-//     }
-//   })
-// }
 
 // Input: req.body.setNumber, req.body.cards
 // On set 1 -> generate 5 images
@@ -50,55 +46,79 @@ router.post('/login', function(req,res) {
 // Set number 3 = based on 2, 4 = based on 3 [optional if our heuristic is unclear]
 // Return either an object containing two things either:
 // {finished: false, images: []} or {finished: true, keywords: []}
-// router.post('/generate/:id', function(req, res) {
-//   var setNum = req.body.setNumber;
-//   if (setNum === 1) {
-//     return generateInitial(req.query.id);
-//   } else (setNum === 2) {
-//     return generateAndAnalyze(req.query.id, req.body.cards)
-//   }
-// })
 
-/*
-  To-Do
-  1. function generateIntial(userId)
-     Takes a userId -> returns an array of 5 image urls
-  2. function generateAndAnalyze(userId, cards)
-     Takes a userId + card mapping to true or false dependent on whether they swiped
-     -> returns an array of 5 image urls or keywords if the heuristic is finished
-*/
+router.post('/generate/:id', function(req, res) {
+  res.send({success: true, cards: genInit()})
+  // var setNum = req.body.setNumber;
+  // if (setNum === 1) {
+  //   return generateInitial(req.query.id);
+  // } else (setNum === 2) {
+  //   return generateAndAnalyze(req.query.id, req.body.cards)
+  // }
+})
 
-router.post('/results/:id', function(req, res) {
-  // Input: req.body.keywords
-  // Generate information about the results based on a search of all the keywords
-  // Check if a restaurant is open or closed
-  // Multi-language platform (feature)
-  // Return all the restaurant information?
+router.post('/results/:id', async (function(req, res) {
+  var keywords = [];
+  var arrKeys = genResult(req.params.id, req.body.swipes);
+
+  for (var i = 0; i < arrKeys.length; i++) {
+    var temp = await (fetch('https://api.yelp.com/v3/businesses/search?latitude=' + req.body.lat + '&longitude=' + req.body.long + '&term=' + arrKeys[i], {
+      method: 'GET',
+      mode: 'no-cors',
+      headers: new fetch.Headers({
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        'Authorization': 'Bearer ' + process.env.YELP_AUTH
+      })
+    }).then((response) => response.json())
+    .then((responseJson) => {
+      for (var i = 0; i < 3; i++) {
+        if (responseJson.businesses[i] !== undefined) {
+          keywords.push(responseJson.businesses[i])
+        }
+      }
+    }).catch(function(error) {
+      res.send({success:false})
+    }));
+  }
+  if (keywords.length === 0) {
+    res.send("No restaurants found")
+  } else {
+    var rand = math.floor(math.random(keywords.length));
+    User.findByIdAndUpdate(req.params.id, {$push: {mainPref: keywords[rand].id}}, function(err, user) {
+      if (err) {
+        res.send({success: false})
+      } else {
+        res.send({success: true, restaurant: keywords[rand]});
+
+      }
+    })
+  }
+}))
+
+router.get('/pictures/:businessid', function(req,res) {
+  fetch('https://api.yelp.com/v3/businesses/' + req.params.businessid, {
+      method: 'GET',
+      mode: 'no-cors',
+      headers: new fetch.Headers({
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        'Authorization': 'Bearer ' + process.env.YELP_AUTH
+      })
+    }).then((response) => response.json())
+    .then((responseJson) => {
+      res.send({success:true, pictures:responseJson.photos})
+    }).catch(function(error) {
+      console.log("error", error);
+    })
 })
 
 router.get('/profile/:id', function(req, res) {
-  // Data heuristics about their profile
-  // Returns user info from mongoose
+  User.findById(req.params.id, function(err, user) {
+    if (err) {
+      res.send({success: false})
+    } else {
+      res.send({success: true, user: user})
+    }
+  })
 })
-
-router.get('/logout', function(req,res) {
-  // Logout user based on token information?
-})
-
-// router.post('/users/register', function(req,res) {
-//   var newUser = new User ({
-//     fname: req.body.fname,
-//     lname: req.body.lname,
-//     email: req.body.email,
-//     password: req.body.password
-//   })
-//   newUser.save(function(err, usr) {
-//     if (err) {
-//       res.json({failure: "database erorr"});
-//     } else {
-//       res.json({success: true});
-//     }
-//   })
-// });
 
 module.exports = router
