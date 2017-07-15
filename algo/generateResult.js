@@ -48,28 +48,21 @@ const generateResult = (userId, cards) => {
   const rankedCuisineScores = _.sortBy(cuisineScores, x => -x.score);
   const rankedCatScores = _.sortBy(catScores, x => -x.score);
 
-  console.log(asianScore);
-  console.log(healthyScore);
-  console.log(rankedCuisineScores);
-  console.log(rankedCatScores);
-  console.log(bestCat);
-  console.log(bestCuisine);
-
   if (asianScore > 2.6) {
-    result.push('asian');
+    results.push('asian');
   };
 
   if (cuisineScores[bestCuisine].score > 2.6) {
     if (catScores[bestCat].score > 1.9) {
-      result.push(bestCuisine + '+' + bestCat);
+      results.push(bestCuisine + '+' + bestCat);
     } else {
-      result.push(bestCat);
+      results.push(bestCat);
     }
   } else  if (catScores[bestCat].score > 1.9) {
     if (cuisineScores[bestCuisine].score > 1.9) {
-      result.push(bestCuisine + '+' + bestCat);
+      results.push(bestCuisine + '+' + bestCat);
     } else {
-      result.push(bestCuisine);
+      results.push(bestCuisine);
     }
   } else {
     if (highestCuisine > highestCat) {
