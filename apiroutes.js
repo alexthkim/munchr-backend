@@ -3,7 +3,7 @@ var mongoose = require('mongoose')
 var router = express.Router();
 var models = require('./models/models');
 var User = models.User;
-var Photo = models.Photo
+var Photo = models.Photo;
 
 
 
