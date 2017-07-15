@@ -59,8 +59,8 @@ router.post('/generate/:id', function(req, res) {
 
 router.post('/results/:id', async (function(req, res) {
   var keywords = [];
-  console.log(req.body.swipes);
   var arrKeys = genResult(req.params.id, req.body.swipes);
+  console.log(arrKeys);
 
   for (var i = 0; i < arrKeys.length; i++) {
     var temp = await (fetch('https://api.yelp.com/v3/businesses/search?latitude=' + req.body.lat + '&longitude=' + req.body.long + '&term=' + arrKeys[i], {
