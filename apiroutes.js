@@ -38,7 +38,6 @@ router.post('/login', function(req,res) {
 });
 
 // Input: req.body.setNumber, req.body.cards
-// On set 1 -> generate 5 images
 // On set 2 -> read the first 4 cards, generate the next 5 images
 // On potential set 3 -> read the first 5 cards, generate the next 5 images
 // On potential set 4 -> read the first 5 cards, generate the next 5 images
