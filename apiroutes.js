@@ -22,11 +22,11 @@ router.post('/login', function(req,res) {
         params.mainPref = [];
         params.sessionPref = [];
         var newUser = new User(params);
-        newUser.save(function(err) {
+        newUser.save(function(err, savedUser) {
           if (err) {
             res.send({success: false});
           } else {
-            res.send({success: true, id: newUser._id});
+            res.send({success: true, id: savedUser._id});
           }
         })
       } else {
